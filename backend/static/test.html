@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 API Connection Test</h1>
+    <p>Test your backend API connection from the frontend</p>
+    
+    <button onclick="testAPI()">Test API Connection</button>
+    <button onclick="testHealth()">Test Health Endpoint</button>
+    <button onclick="testCORS()">Test CORS</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            document.getElementById('results').prepend(div);
+        }
+        
+        async function testAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/test`);
+                const data = await response.json();
+                addResult(`✅ API Test: ${data.message}`, true);
+                console.log('API Response:', data);
+            } catch (error) {
+                addResult(`❌ API Test Failed: ${error.message}`, false);
+                console.error('API Error:', error);
+            }
+        }
+        
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                addResult(`✅ Health Check: ${data.message}`, true);
+                console.log('Health Response:', data);
+            } catch (error) {
+                addResult(`❌ Health Check Failed: ${error.message}`, false);
+                console.error('Health Error:', error);
+            }
+        }
+        
+        async function testCORS() {
+            try {
+                const response = await fetch(`${API_BASE}/test`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                addResult(`✅ CORS Preflight: Status ${response.status}`, true);
+            } catch (error) {
+                addResult(`❌ CORS Test Failed: ${error.message}`, false);
+                console.error('CORS Error:', error);
+            }
+        }
+        
+        // Auto-test on page load
+        window.onload = function() {
+            setTimeout(testAPI, 1000);
+        }
+    </script>
+</body>
+</html>
